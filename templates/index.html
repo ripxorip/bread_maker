@@ -90,7 +90,7 @@ button {
   min-width: 100%;
   min-height: 100%;
 
-    /* Full height */
+  /* Full height */
   height: 100%;
 
 
@@ -110,6 +110,15 @@ button {
   opacity: 0.5;
 }
 
+.top-left-temp {
+  position: absolute;
+  top: 3%;
+  left: 85%;
+  font-size: 38px;
+  color: white;
+  opacity: 0.5;
+}
+
 body {
     margin: 0;
     padding: 0;
@@ -123,7 +132,7 @@ body {
 </style>
 </head>
 
-<title>Make - PiStream</title>
+<title>Bread Maker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
@@ -136,9 +145,11 @@ body {
 </div>
 
   <div class="top-right-logo">
-  	<a></a>Raspberry Pi - Camera Stream </a>
+  	Philips Bread Maker
   </div>
 
+  <div class="top-left-temp" id="temperature-text">
+  </div>
 
 <div class="navbar">
 
@@ -160,7 +171,21 @@ body {
   
 var button = document.getElementById('button');
 
+updateTemperature();
+//setInterval(updateTemperature, 1000);
+
+function updateTemperature () {
+    var temp_div = document.getElementById('temperature-text');
+    var xmlHttp = new XMLHttpRequest();
+    xmlHttp.open( "GET", '/temperature', false ); // false for synchronous request
+    xmlHttp.send( null );
+    temp_div.innerHTML = xmlHttp.responseText;
+    window.setTimeout(updateTemperature, 1000);
+}
+
+
 button.onclick = function() {
+/*
     var div = document.getElementById('newpost');
     if (div.style.display !== 'none') {
         div.style.display = 'none';
@@ -168,6 +193,8 @@ button.onclick = function() {
     else {
         div.style.display = 'block';
     }
+*/
+
 };
    
 </script>

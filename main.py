@@ -1,7 +1,13 @@
+import RPi.GPIO as GPIO
 from flask import Flask, render_template, Response, request
 import io
 import picamera
 from threading import Condition
+from w1thermsensor import W1ThermSensor
+import neopixel
+import board
+import threading
+import time
 
 class StreamingOutput(object):
     def __init__(self):
@@ -20,18 +26,52 @@ class StreamingOutput(object):
             self.buffer.seek(0)
         return self.buffer.write(buf)
 
+# App Globals (do not edit)
+app = Flask(__name__)
 camera = picamera.PiCamera(resolution='640x480', framerate=24)
 output = StreamingOutput()
 #Uncomment the next line to change your Pi's Camera rotation (in degrees)
 #camera.rotation = 90
 camera.start_recording(output, format='mjpeg')
+sensor = W1ThermSensor()
+pixels = neopixel.NeoPixel(board.D18, 30)
+pixels.fill((255, 255, 180))
+mutex = threading.Lock()
 
-# App Globals (do not edit)
-app = Flask(__name__)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(17, GPIO.OUT)
+GPIO.output(17, 1)
+
+
+def pid(temperature):
+    if temperature < 30.00:
+        GPIO.output(17, 1)
+    else:
+        GPIO.output(17, 0)
+
+def control_thread():
+    while True:
+        mutex.acquire()
+        try:
+            temperature = sensor.get_temperature()
+        finally:
+            mutex.release()
+            print("Processing")
+            pid(temperature)
+            time.sleep(1)
 
 @app.route('/')
 def index():
     return render_template('index.html') #you can customze index.html here
+
+@app.route('/temperature')
+def temperature():
+    mutex.acquire()
+    try:
+        temperature = sensor.get_temperature()
+    finally:
+        mutex.release()
+    return str(temperature) + ' C'
 
 def gen(output):
     #get camera frame
@@ -48,5 +88,6 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-
+    t = threading.Thread(target=control_thread)
+    t.start()
     app.run(host='0.0.0.0', debug=False)
