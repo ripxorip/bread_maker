@@ -8,6 +8,7 @@ import neopixel
 import board
 import threading
 import time
+from datetime import datetime
 
 class StreamingOutput(object):
     def __init__(self):
@@ -40,37 +41,52 @@ mutex = threading.Lock()
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(17, GPIO.OUT)
-GPIO.output(17, 1)
 
+temperature = 0.00
+heater_out = 0.00
+
+def pwm_thread():
+    while True:
+        period = 5.00
+        time_active = heater_out * period
+        time_passive = (1.00 - heater_out) * period
+        GPIO.output(17, 1)
+        time.sleep(time_active)
+        GPIO.output(17, 0)
+        time.sleep(time_passive)
 
 def pid(temperature):
-    if temperature < 30.00:
-        GPIO.output(17, 1)
-    else:
-        GPIO.output(17, 0)
+    global heater_out
+
+    set_point = 30.00
+    error = set_point - temperature
+    kp = 0.4
+
+    heater_out = kp * error
+
+    print("heater out: " + str(heater_out))
+
+    if heater_out > 1.00:
+        heater_out = 1.00
+    elif heater_out < 0.00:
+        heater_out = 0.00
+
 
 def control_thread():
+    global temperature
     while True:
-        mutex.acquire()
         try:
             temperature = sensor.get_temperature()
-        finally:
-            mutex.release()
-            print("Processing")
             pid(temperature)
-            time.sleep(1)
+        except w1thermsensor.errors.SensorNotReadyError:
+            pass
 
 @app.route('/')
 def index():
-    return render_template('index.html') #you can customze index.html here
+    return render_template('index.html')
 
 @app.route('/temperature')
 def temperature():
-    mutex.acquire()
-    try:
-        temperature = sensor.get_temperature()
-    finally:
-        mutex.release()
     return str(temperature) + ' C'
 
 def gen(output):
@@ -90,4 +106,8 @@ def video_feed():
 if __name__ == '__main__':
     t = threading.Thread(target=control_thread)
     t.start()
+
+    t_pwm = threading.Thread(target=pwm_thread)
+    t_pwm.start()
+
     app.run(host='0.0.0.0', debug=False)
