@@ -10,6 +10,10 @@ import threading
 import time
 from datetime import datetime
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 class StreamingOutput(object):
     def __init__(self):
         self.frame = None
