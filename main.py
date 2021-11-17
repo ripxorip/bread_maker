@@ -44,6 +44,7 @@ GPIO.setup(17, GPIO.OUT)
 
 temperature = 0.00
 heater_out = 0.00
+Iterm = 0.00
 
 def pwm_thread():
     while True:
@@ -57,19 +58,32 @@ def pwm_thread():
 
 def pid(temperature):
     global heater_out
+    global Iterm
 
     set_point = 30.00
     error = set_point - temperature
+
     kp = 0.4
+    ki = 0.01
 
-    heater_out = kp * error
+    Iterm += (error * ki)
 
-    print("heater out: " + str(heater_out))
+    # Windup
+    if (Iterm > 1.00):
+        Iterm = 1.00
+    elif Iterm < 0.00:
+        Iterm = 0.00
+
+    heater_out = kp * error + Iterm
+
+    print("Iterm: " + str(Iterm))
 
     if heater_out > 1.00:
         heater_out = 1.00
     elif heater_out < 0.00:
         heater_out = 0.00
+
+    print("heater out: " + str(heater_out))
 
 
 def control_thread():
