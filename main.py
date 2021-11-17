@@ -3,7 +3,7 @@ from flask import Flask, render_template, Response, request
 import io
 import picamera
 from threading import Condition
-from w1thermsensor import W1ThermSensor
+import w1thermsensor
 import neopixel
 import board
 import threading
@@ -34,7 +34,7 @@ output = StreamingOutput()
 #Uncomment the next line to change your Pi's Camera rotation (in degrees)
 #camera.rotation = 90
 camera.start_recording(output, format='mjpeg')
-sensor = W1ThermSensor()
+sensor = w1thermsensor.W1ThermSensor()
 pixels = neopixel.NeoPixel(board.D18, 30)
 pixels.fill((255, 255, 180))
 mutex = threading.Lock()
