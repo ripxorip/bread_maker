@@ -68,7 +68,7 @@ def pid(temperature):
     error = set_point - temperature
 
     kp = 0.4
-    ki = 0.01
+    ki = 0.001
 
     Iterm += (error * ki)
 
