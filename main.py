@@ -114,6 +114,15 @@ def control_thread():
 def index():
     return render_template('index.html')
 
+@app.route('/graph')
+def graph():
+    return render_template('graph.html')
+
+@app.route('/graph_data')
+def graph_data():
+    # Return the data to be plotted
+    return {'x': [1,2,3,4,5,6,7,8,9], 'y': [0,1,2,3,4,5,6,7,8]}
+
 @app.route('/temperature')
 def temperature():
     return str(temperature) + ' C'
