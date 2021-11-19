@@ -1,11 +1,22 @@
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+    import picamera
+    import w1thermsensor
+    import neopixel
+    import board
+except ImportError:
+    print("Could not import hardware libraries, running as simulator..")
+    # Import mockups
+    from mock import picamera
+    from mock import w1thermsensor
+    from mock import neopixel
+    from mock import gpio
+    GPIO = gpio.gpio
+    board = neopixel.board
+
 from flask import Flask, render_template, Response, request
 import io
-import picamera
 from threading import Condition
-import w1thermsensor
-import neopixel
-import board
 import threading
 import time
 from datetime import datetime
