@@ -61,6 +61,8 @@ temperature = 0.00
 heater_out = 0.00
 Iterm = 0.00
 
+g_data = {'temp': [], 'Iterm': [], 'heater_out': []}
+
 def pwm_thread():
     while True:
         period = 5.00
@@ -100,6 +102,10 @@ def pid(temperature):
 
     print("heater out: " + str(heater_out))
 
+    g_data['temp'].append(temperature)
+    g_data['Iterm'].append(Iterm)
+    g_data['heater_out'].append(heater_out)
+
 
 def control_thread():
     global temperature
@@ -121,7 +127,12 @@ def graph():
 @app.route('/graph_data')
 def graph_data():
     # Return the data to be plotted
-    return {'x': [1,2,3,4,5,6,7,8,9], 'y': [0,1,2,3,4,5,6,7,8]}
+    data = []
+    i = 1
+    for g in g_data:
+        data.append({'xaxis': 'x'+str(i), 'yaxis': 'y'+str(i), 'y': g_data[g], 'x': list(range(1, len(g_data[g]))), 'mode': 'lines', 'name': g})
+        i += 1
+    return {'data': data}
 
 @app.route('/temperature')
 def temperature():
