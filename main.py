@@ -77,7 +77,7 @@ def pid(temperature):
     global heater_out
     global Iterm
 
-    set_point = 30.00
+    set_point = 28.00
     error = set_point - temperature
 
     kp = 0.4
