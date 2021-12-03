@@ -68,6 +68,11 @@ def pwm_thread():
         period = 5.00
         time_active = heater_out * period
         time_passive = (1.00 - heater_out) * period
+        if time_passive < 0:
+            time_passive = 0
+        if time_active < 0:
+            time_active = 0
+
         GPIO.output(17, 1)
         time.sleep(time_active)
         GPIO.output(17, 0)
